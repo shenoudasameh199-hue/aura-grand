@@ -24,26 +24,21 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android Files
+      - name: Create Clean App & Build
         run: |
-          mkdir -p lib
-          if [ -f lib/main.dart ]; then
-            cp lib/main.dart main_backup.dart
-          fi
-          flutter create . --project-name=aura_grand --platforms=android --overwrite
-          if [ -f main_backup.dart ]; then
-            cp main_backup.dart lib/main.dart
-            rm main_backup.dart
-          fi
+          # 1. إنشاء مشروع فلاتر مجاني ونظيف في مجلد مؤقت
+          flutter create --project-name=auragrand temp_app
+          
+          # 2. نقل ملف الكود الخاص بك داخل المشروع الجديد
+          cp lib/main.dart temp_app/lib/main.dart
+          
+          # 3. بناء تطبيق الـ APK
+          cd temp_app
+          flutter pub get
+          flutter build apk --release
 
-      - name: Get Dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: aura-grand-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: AuraGrand-APK
+          path: temp_app/build/app/outputs/flutter-apk/app-release.apk
