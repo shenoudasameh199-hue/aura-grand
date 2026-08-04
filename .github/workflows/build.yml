@@ -17,12 +17,16 @@ jobs:
         with:
           channel: 'stable'
           
-      - name: Create Android only if missing
+      - name: Generate Android safely without losing main.dart
         run: |
           if [ ! -d "android" ]; then
+            mkdir -p temp_backup
+            cp lib/main.dart temp_backup/main.dart
             flutter create . --platforms=android
+            cp temp_backup/main.dart lib/main.dart
+            rm -rf temp_backup
           fi
-          
+
       - run: flutter pub get
       - run: flutter build apk --release
       
