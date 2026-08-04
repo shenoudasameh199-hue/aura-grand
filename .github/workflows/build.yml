@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
@@ -22,16 +23,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Flutter Platform Files
-        run: flutter create . --org com.aura.grand --project-name aura_grand --platforms=android
-
-      - name: Install dependencies
+      - name: Get Flutter packages
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build APK release
         run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
           name: app-release
