@@ -23,8 +23,11 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Generate Android Project Files
-        run: flutter create . --org com.aura.grand --project-name aura_grand --platforms=android
+      - name: Generate Android folder safely
+        run: |
+          flutter create temp_project --org com.aura.grand --platforms=android
+          cp -r temp_project/android ./android
+          rm -rf temp_project
 
       - name: Get Flutter packages
         run: flutter pub get
