@@ -1,4 +1,4 @@
-# aura-grandname: Build Aura Grand APK
+name: Build Aura Grand APK
 
 on:
   push:
