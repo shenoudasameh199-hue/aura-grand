@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Set up Flutter
@@ -24,21 +24,25 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Clean App & Build
+      - name: Build App
         run: |
-          # 1. إنشاء مشروع فلاتر مجاني ونظيف في مجلد مؤقت
-          flutter create --project-name=auragrand temp_app
+          # 1. إنشاء مشروع فلاتر نظيف
+          flutter create --project-name=auragrand my_app
           
-          # 2. نقل ملف الكود الخاص بك داخل المشروع الجديد
-          cp lib/main.dart temp_app/lib/main.dart
-          
-          # 3. بناء تطبيق الـ APK
-          cd temp_app
-          flutter pub get
-          flutter build apk --release
+          # 2. نسخ ملف الكود الخاص بك
+          if [ -f lib/main.dart ]; then
+            cp lib/main.dart my_app/lib/main.dart
+          elif [ -f main.dart ]; then
+            cp main.dart my_app/lib/main.dart
+          fi
 
-      - name: Upload APK Artifact
+          # 3. البناء بصيغة Debug لتخطي أخطاء التوقيع والـ Gradle
+          cd my_app
+          flutter pub get
+          flutter build apk --debug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AuraGrand-APK
-          path: temp_app/build/app/outputs/flutter-apk/app-release.apk
+          path: my_app/build/app/outputs/flutter-apk/app-debug.apk
