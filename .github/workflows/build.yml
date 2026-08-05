@@ -24,10 +24,15 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Build App
+      - name: Build Custom App
         run: |
           flutter create --project-name auragrand clean_app
+          # نسخ كود main.dart الخاص بك ليحل محل العداد الافتراضي
+          if [ -f lib/main.dart ]; then
+            cp lib/main.dart clean_app/lib/main.dart
+          fi
           cd clean_app
+          flutter pub get
           flutter build apk --debug
 
       - name: Upload APK
