@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -24,20 +24,20 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create and Build App
+      - name: Accept Android Licenses
+        run: yes | flutter doctor --android-licenses || true
+
+      - name: Build Debug APK
         run: |
-          flutter create --project-name auragrand app_temp
+          flutter create --project-name auragrand app_build
           if [ -f lib/main.dart ]; then
-            cp lib/main.dart app_temp/lib/main.dart
-          elif [ -f main.dart ]; then
-            cp main.dart app_temp/lib/main.dart
+            cp lib/main.dart app_build/lib/main.dart
           fi
-          cd app_temp
-          flutter pub get
+          cd app_build
           flutter build apk --debug
 
-      - name: Upload APK
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuraGrand-APK
-          path: app_temp/build/app/outputs/flutter-apk/app-debug.apk
+          path: app_build/build/app/outputs/flutter-apk/app-debug.apk
