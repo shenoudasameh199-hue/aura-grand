@@ -24,20 +24,14 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Accept Android Licenses
-        run: yes | flutter doctor --android-licenses || true
-
-      - name: Build Debug APK
+      - name: Build App
         run: |
-          flutter create --project-name auragrand app_build
-          if [ -f lib/main.dart ]; then
-            cp lib/main.dart app_build/lib/main.dart
-          fi
-          cd app_build
+          flutter create --project-name auragrand clean_app
+          cd clean_app
           flutter build apk --debug
 
-      - name: Upload Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AuraGrand-APK
-          path: app_build/build/app/outputs/flutter-apk/app-debug.apk
+          path: clean_app/build/app/outputs/flutter-apk/app-debug.apk
