@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -24,13 +21,164 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Auto Complete Project & Build
+      - name: Create Clean App & Inject Code
         run: |
-          flutter create .
+          flutter create --project-name auragrand clean_app
+          cat << 'EOF' > clean_app/lib/main.dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const AuraGrandApp());
+}
+
+class AuraGrandApp extends StatelessWidget {
+  const AuraGrandApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Aura Grand',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0F0E17),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF9D4EDD),
+          secondary: Color(0xFFC77DFF),
+          surface: Color(0xFF1B1A29),
+        ),
+      ),
+      home: const AuraHomeDashboard(),
+    );
+  }
+}
+
+class AuraHomeDashboard extends StatefulWidget {
+  const AuraHomeDashboard({super.key});
+
+  @override
+  State<AuraHomeDashboard> createState() => _AuraHomeDashboardState();
+}
+
+class _AuraHomeDashboardState extends State<AuraHomeDashboard> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const HotelClubOverviewTab(),
+    const LiveChatTab(),
+    const MoneySafeTab(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _currentIndex == 0
+              ? 'نظام إدارة Aura Grand'
+              : _currentIndex == 1
+                  ? 'الدردشة الحية'
+                  : 'خزنة الأموال',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        backgroundColor: const Color(0xFF1B1A29),
+      ),
+      body: _screens[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        backgroundColor: const Color(0xFF1B1A29),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.hotel_outlined),
+            selectedIcon: Icon(Icons.hotel, color: Color(0xFFC77DFF)),
+            label: 'الفندق والنادي',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble, color: Color(0xFFC77DFF)),
+            label: 'الدردشة',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.lock_outline),
+            selectedIcon: Icon(Icons.lock, color: Color(0xFFC77DFF)),
+            label: 'الخزنة',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HotelClubOverviewTab extends StatelessWidget {
+  const HotelClubOverviewTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('مرحباً بك في نظام Aura Grand', style: TextStyle(fontSize: 20, color: Colors.white)),
+    );
+  }
+}
+
+class LiveChatTab extends StatelessWidget {
+  const LiveChatTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('خدمة الدردشة الحية', style: TextStyle(fontSize: 20, color: Colors.white)),
+    );
+  }
+}
+
+class MoneySafeTab extends StatefulWidget {
+  const MoneySafeTab({super.key});
+
+  @override
+  State<MoneySafeTab> createState() => _MoneySafeTabState();
+}
+
+class _MoneySafeTabState extends State<MoneySafeTab> {
+  bool _isUnlocked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            _isUnlocked ? Icons.lock_open : Icons.lock,
+            size: 80,
+            color: _isUnlocked ? Colors.green : Colors.red,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            _isUnlocked ? 'الخزنة مفتوحة: $125,450' : 'الخزنة مقفلة',
+            style: const TextStyle(fontSize: 22, color: Colors.white),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => setState(() => _isUnlocked = !_isUnlocked),
+            child: Text(_isUnlocked ? 'قفل الخزنة' : 'فتح الخزنة'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+EOF
+          cd clean_app
           flutter build apk --debug
 
-      - name: Upload APK
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AuraGrand-APK
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: clean_app/build/app/outputs/flutter-apk/app-debug.apk
